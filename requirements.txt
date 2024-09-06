@@ -1,0 +1,27 @@
+streamlit
+opencv-python-headless
+torch
+torchvision
+#ultralytics
+matplotlib
+huggingface_hub
+numpy
+opencv_python
+PyYAML
+scipy
+contourpy
+cycler
+fonttools
+kiwisolver
+psutil
+py_cpuinfo
+pyparsing
+seaborn
+tqdm
+ultralytics_thop
+pycurl
+
+
+# build run
+# docker build -t yolo .
+# docker run -p 8501:8501 yolo
