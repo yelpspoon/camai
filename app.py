@@ -2,16 +2,16 @@ import streamlit as st
 import cv2
 import torch
 import numpy as np
+import json
 from ultralytics import YOLOv10
 
-# URL of the YOLO dataset
-#url = "https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov10n.pt"
-YOLO_MODEL = "yolov10n.pt"
-
 # Load YOLOv10 model
-#model = torch.hub.load('ultralytics/yolov5', 'yolov5x')  # Placeholder for YOLOv10
-#model = YOLO.from_pretrained(YOLO_MODEL)
+YOLO_MODEL = "yolov10n.pt"
 model = YOLOv10(YOLO_MODEL)
+
+# Load video stream IPs from JSON file
+with open('streams.json', 'r') as f:
+    video_sources = json.load(f)  # Load IP addresses
 
 # Streamlit app layout
 st.set_page_config(layout="wide")
@@ -24,10 +24,6 @@ tracked_objects = [obj.strip() for obj in object_list.split(",")]
 # State to track currently selected stream
 if 'selected_stream' not in st.session_state:
     st.session_state['selected_stream'] = None
-
-# Video streams (mocked for example)
-video_sources = ['video1.mp4', 'video2.mp4', 'video3.mp4', 'video4.mp4',
-                 'video5.mp4', 'video6.mp4', 'video7.mp4', 'video8.mp4']
 
 # Function to process frames with YOLO
 def detect_objects(frame):
@@ -47,12 +43,12 @@ def display_streams():
             if not ret:
                 st.warning(f"Stream {video_source} not available")
                 continue
-            
+
             detections = detect_objects(frame)
             for _, row in detections.iterrows():
                 cv2.rectangle(frame, (int(row['xmin']), int(row['ymin'])), (int(row['xmax']), int(row['ymax'])), (255, 0, 0), 2)
                 cv2.putText(frame, f"{row['name']} {row['confidence']:.2f}", (int(row['xmin']), int(row['ymin']) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
-            
+
             # Convert image to RGB for Streamlit display
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             st.image(frame_rgb, caption=f"Stream {i+1}", use_column_width=True)
@@ -75,10 +71,10 @@ def display_enlarged_stream(video_source):
         for _, row in detections.iterrows():
             cv2.rectangle(frame, (int(row['xmin']), int(row['ymin'])), (int(row['xmax']), int(row['ymax'])), (255, 0, 0), 2)
             cv2.putText(frame, f"{row['name']} {row['confidence']:.2f}", (int(row['xmin']), int(row['ymin']) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
-        
+
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         st.image(frame_rgb, caption=f"Stream {video_source}", use_column_width=True)
-        
+
         if st.button("Back to All Streams"):
             st.session_state['selected_stream'] = None
             break
